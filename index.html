@@ -33,7 +33,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 .main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{padding:14px 26px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--bg);position:sticky;top:0;z-index:50}
-.page-title{font-size:14px;font-weight:600;color:var(--text)}
+.page-title{font-size:14px;font-weight:600}
 .topbar-r{display:flex;align-items:center;gap:10px}
 .topbar-time{font-family:var(--mono);font-size:10px;color:var(--muted)}
 .btn-sm{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;transition:all 0.15s}
@@ -95,6 +95,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .wbar-fill{height:100%;border-radius:2px;background:var(--accent)}
 .wpct{font-family:var(--mono);font-size:11px;font-weight:500;min-width:36px;text-align:right}
 .wpct.h{color:var(--accent)}.wpct.m{color:var(--orange)}.wpct.l{color:var(--muted)}
+.wpct.nd{color:var(--muted2);font-size:9px}
+
+/* Min data badge */
+.min-badge{font-family:var(--mono);font-size:9px;color:var(--muted2);background:var(--card2);border:1px solid var(--border);border-radius:3px;padding:1px 5px;margin-left:4px}
 
 /* Tabs */
 .tab-row{display:flex;gap:5px;margin-bottom:14px}
@@ -110,7 +114,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .cs-row{font-family:var(--mono);font-size:10px;color:var(--muted);padding:4px 0;display:flex;gap:10px}
 .cs-row span{color:var(--accent)}
 
-/* Loading / empty */
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-b{text-align:center;padding:36px;color:var(--muted);font-family:var(--mono);font-size:11px}
@@ -165,9 +168,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       <div id="setupWrap" class="setup-wrap">
         <div class="setup-card">
           <div class="setup-title">⚡ Connect je data</div>
-          <div class="setup-desc">Vul je API keys in om het dashboard te activeren.<br>Wordt eenmalig opgeslagen in je browser — hoef je maar één keer te doen.</div>
+          <div class="setup-desc">Vul je API keys in om het dashboard te activeren.<br>Wordt eenmalig opgeslagen in je browser.</div>
           <div class="frow">
-            <div class="field"><label>Google Sheets ID</label><input type="text" id="sheetId" placeholder="1MQZKIvSwr_LxvK..."/></div>
+            <div class="field"><label>Google Sheets ID</label><input type="text" id="sheetId" placeholder="1MQZKIvSwr_..."/></div>
             <div class="field"><label>Google API Key</label><input type="password" id="googleKey" placeholder="AIzaSy..."/></div>
           </div>
           <div class="field"><label>Anthropic API Key</label><input type="password" id="anthropicKey" placeholder="sk-ant-..."/></div>
@@ -216,14 +219,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       <div class="cs-wrap">
         <div class="cs-icon">🛒</div>
         <div class="cs-h">Live Sales</div>
-        <div class="cs-p">Shopify koppeling wordt gebouwd in fase 2. Je ziet hier straks al je sales data realtime.</div>
+        <div class="cs-p">Shopify koppeling wordt gebouwd in fase 2.</div>
         <div class="cs-list">
-          <div class="cs-row"><span>01</span>Shopify API credentials instellen</div>
-          <div class="cs-row"><span>02</span>Sales vandaag / 7d / 30d / 365d</div>
-          <div class="cs-row"><span>03</span>Orders, fulfilled, nog te fulfilen</div>
-          <div class="cs-row"><span>04</span>AOV, CVR%, ATC%, checkout%</div>
-          <div class="cs-row"><span>05</span>Top products ranking</div>
-          <div class="cs-row"><span>06</span>Valuta weergave in USD</div>
+          <div class="cs-row"><span>01</span>Sales vandaag / 7d / 30d / 365d</div>
+          <div class="cs-row"><span>02</span>Orders, fulfilled, nog te fulfilen</div>
+          <div class="cs-row"><span>03</span>AOV, CVR%, ATC%, checkout%</div>
+          <div class="cs-row"><span>04</span>Top products ranking in USD</div>
         </div>
       </div>
     </div>
@@ -233,7 +234,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       <div class="cs-wrap">
         <div class="cs-icon">🤖</div>
         <div class="cs-h">Agent Status</div>
-        <div class="cs-p">Overzicht van je AI agents — scraper, review collector, listing writer en meer.</div>
+        <div class="cs-p">Overzicht van je AI agents — scraper, review collector, listing writer.</div>
         <div class="cs-list">
           <div class="cs-row"><span>01</span>Meta Ad Library competitor scraper</div>
           <div class="cs-row"><span>02</span>Amazon/Reddit review collector</div>
@@ -248,7 +249,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       <div class="setup-wrap">
         <div class="setup-card">
           <div class="setup-title">⚙️ Instellingen</div>
-          <div class="setup-desc">Pas je API keys aan of verbind opnieuw met je data.</div>
+          <div class="setup-desc">Pas je API keys aan of verbind opnieuw.</div>
           <div class="frow">
             <div class="field"><label>Google Sheets ID</label><input type="text" id="sheetIdS" placeholder="1MQZKIvSwr_..."/></div>
             <div class="field"><label>Google API Key</label><input type="password" id="googleKeyS" placeholder="AIzaSy..."/></div>
@@ -263,6 +264,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 </main>
 
 <script>
+const MIN_DATA = 10; // minimum producten voor betrouwbaar percentage
 let cfg={sheetId:'',googleKey:'',anthropicKey:''};
 let D={women:[],men:[],methods:[],markets:[]};
 let curG='WOMEN';
@@ -270,14 +272,14 @@ const titles={testing:'Testing Data',sales:'Live Sales',agents:'Agent Status',se
 
 window.onload=()=>{
   tick();setInterval(tick,30000);
-  const s=localStorage.getItem('zynford_v2');
+  const s=localStorage.getItem('zynford_v3');
   if(s){
     cfg=JSON.parse(s);
     ['sheetId','googleKey','anthropicKey'].forEach(k=>{
       const el=document.getElementById(k);
-      if(el) el.value=cfg[k]||'';
+      if(el)el.value=cfg[k]||'';
     });
-    if(cfg.sheetId&&cfg.googleKey) loadDashboard();
+    if(cfg.sheetId&&cfg.googleKey)loadDashboard();
   }
 };
 
@@ -307,7 +309,7 @@ function saveAndConnect(){
   cfg.googleKey=document.getElementById('googleKey').value.trim();
   cfg.anthropicKey=document.getElementById('anthropicKey').value.trim();
   if(!cfg.sheetId||!cfg.googleKey){alert('Vul minimaal Sheet ID en Google API Key in.');return;}
-  localStorage.setItem('zynford_v2',JSON.stringify(cfg));
+  localStorage.setItem('zynford_v3',JSON.stringify(cfg));
   loadDashboard();
 }
 
@@ -315,7 +317,7 @@ function saveSettings(){
   cfg.sheetId=document.getElementById('sheetIdS').value.trim();
   cfg.googleKey=document.getElementById('googleKeyS').value.trim();
   cfg.anthropicKey=document.getElementById('anthropicKeyS').value.trim();
-  localStorage.setItem('zynford_v2',JSON.stringify(cfg));
+  localStorage.setItem('zynford_v3',JSON.stringify(cfg));
   nav('testing');loadDashboard();
 }
 
@@ -330,7 +332,7 @@ async function loadDashboard(){
     renderAll();
     if(cfg.anthropicKey)loadInsight();
   }catch(e){
-    alert('Fout bij laden:\n'+e.message+'\n\nCheck je Sheet ID en Google API Key.');
+    alert('Fout bij laden:\n'+e.message);
   }
 }
 
@@ -400,14 +402,19 @@ function renderWinners(){
 }
 
 function wcard(title,sub,items){
-  const rows=items.length?items.map((r,i)=>`
-    <div class="witem ${i===0?'top':''}">
+  const rows=items.length?items.map((r,i)=>{
+    const reliable = r.tested >= MIN_DATA;
+    const pctLabel = reliable
+      ? `<div class="wpct ${r.salePct>=0.4?'h':r.salePct>=0.2?'m':'l'}">${p(r.salePct)}%</div>`
+      : `<div class="wpct nd">${r.tested}x<span class="min-badge">min ${MIN_DATA}</span></div>`;
+    return`<div class="witem ${i===0?'top':''}">
       <div class="wrank ${i===0?'gold':''}">${i===0?'★':(i+1)}</div>
       <div class="wname">${r.name}</div>
       <div class="wtested">${r.tested}x</div>
-      <div class="wbar"><div class="wbar-fill" style="width:${Math.round(r.salePct*100)}%"></div></div>
-      <div class="wpct ${r.salePct>=0.4?'h':r.salePct>=0.2?'m':'l'}">${p(r.salePct)}%</div>
-    </div>`).join(''):`<div class="empty-b">Nog geen data</div>`;
+      <div class="wbar"><div class="wbar-fill" style="width:${reliable?Math.round(r.salePct*100):0}%"></div></div>
+      ${pctLabel}
+    </div>`;
+  }).join(''):`<div class="empty-b">Nog geen data</div>`;
   return`<div class="dcard"><div class="dcard-t">${title}</div><div class="dcard-s">${sub}</div><div class="wlist">${rows}</div></div>`;
 }
 
@@ -426,38 +433,52 @@ function renderCat(g){
   const arr=g==='WOMEN'?D.women:D.men;
   const sorted=[...arr].filter(r=>r.tested>0).sort((a,b)=>b.salePct-a.salePct);
   const el=document.getElementById('catDetail');
-  if(!sorted.length){el.innerHTML='<div class="empty-b">Nog geen data ingevuld voor deze categorie</div>';return;}
+  if(!sorted.length){el.innerHTML='<div class="empty-b">Nog geen data</div>';return;}
   const max=Math.max(...sorted.map(r=>r.salePct),0.01);
-  el.innerHTML=`<div class="wlist">${sorted.map((r,i)=>`
-    <div class="witem ${i===0?'top':''}">
+  el.innerHTML=`<div class="wlist">${sorted.map((r,i)=>{
+    const reliable = r.tested >= MIN_DATA;
+    const pctLabel = reliable
+      ? `<div class="wpct ${r.salePct>=0.4?'h':r.salePct>=0.2?'m':'l'}">${p(r.salePct)}% sale</div>`
+      : `<div class="wpct nd">min ${MIN_DATA} nodig</div>`;
+    return`<div class="witem ${i===0?'top':''}">
       <div class="wrank ${i===0?'gold':''}">${i===0?'★':(i+1)}</div>
       <div class="wname">${r.name}</div>
       <div class="wtested">${r.tested}x getest</div>
-      <div class="wbar"><div class="wbar-fill" style="width:${Math.round(r.salePct/max*100)}%"></div></div>
-      <div class="wpct ${r.salePct>=0.4?'h':r.salePct>=0.2?'m':'l'}">${p(r.salePct)}% sale</div>
-      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);min-width:70px;text-align:right">${p(r.killedPct)}% killed</div>
-    </div>`).join('')}</div>`;
+      <div class="wbar"><div class="wbar-fill" style="width:${reliable?Math.round(r.salePct/max*100):0}%"></div></div>
+      ${pctLabel}
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);min-width:70px;text-align:right">
+        ${reliable?p(r.killedPct)+'% killed':'—'}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
 }
 
+// Claude via eigen Vercel backend (geen CORS probleem)
 async function loadInsight(){
   if(!cfg.anthropicKey)return;
   const el=document.getElementById('insightTxt');
-  el.className='insight-txt loading';el.textContent='Claude analyseert...';
-  const tw=topN(D.women,3).map(r=>`${r.name}(${p(r.salePct)}%)`).join(', ');
-  const tm=topN(D.methods,3).map(r=>`${r.name}(${p(r.salePct)}%)`).join(', ');
-  const tmk=topN(D.markets,3).map(r=>`${r.name}(${p(r.salePct)}%)`).join(', ');
+  el.className='insight-txt loading';
+  el.textContent='Claude analyseert...';
+
+  const tw=topN(D.women,3).filter(r=>r.tested>=MIN_DATA).map(r=>`${r.name}(${p(r.salePct)}%)`).join(', ')||'onvoldoende data';
+  const tm=topN(D.methods,3).filter(r=>r.tested>=MIN_DATA).map(r=>`${r.name}(${p(r.salePct)}%)`).join(', ')||'onvoldoende data';
+  const tmk=topN(D.markets,3).filter(r=>r.tested>=MIN_DATA).map(r=>`${r.name}(${p(r.salePct)}%)`).join(', ')||'onvoldoende data';
+
+  const prompt=`Belle Scottsdale dropshipping (fashion vrouwen 35-65, UK):\nTop categorieën (min ${MIN_DATA} tests): ${tw}\nTop methoden: ${tm}\nTop markten: ${tmk}\n\nGeef 1 directe aanbeveling in max 20 woorden. Geen inleiding.`;
+
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
+    const r=await fetch('/api/claude',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':cfg.anthropicKey,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:80,messages:[{role:'user',content:`Belle Scottsdale dropshipping data:\nCategorie winners: ${tw||'geen'}\nMethode winners: ${tm||'geen'}\nMarkt winners: ${tmk||'geen'}\n\nGeef 1 directe aanbeveling in max 20 woorden. Geen inleiding.`}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt,apiKey:cfg.anthropicKey})
     });
     const d=await r.json();
+    if(d.error)throw new Error(d.error);
     el.className='insight-txt';
-    el.textContent=d.content?.[0]?.text||'Geen analyse beschikbaar.';
+    el.textContent=d.text||'Geen analyse beschikbaar.';
   }catch(e){
     el.className='insight-txt loading';
-    el.textContent='Voeg Anthropic API key toe in Instellingen voor AI analyse.';
+    el.textContent='Analyse tijdelijk niet beschikbaar: '+e.message;
   }
 }
 
