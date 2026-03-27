@@ -19,7 +19,14 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 100,
+        max_tokens: 120,
+        system: `Je bent een dropshipping data analist. Geef advies puur op basis van de cijfers die je krijgt. 
+Regels:
+- Noem NOOIT de doelgroep (vrouwen 35-65) — dat is altijd bekend
+- CA/UK/USA etc zijn bronmarkten (waar je het product vandaan haalt), niet je verkoopmarkt
+- Formaat: "Focus op [categorie] via [methode] uit [bronmarkt]. Overweeg ook [extra suggestie op basis van data]."
+- Max 30 woorden totaal
+- Geen inleiding, geen uitleg, alleen het advies`,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
