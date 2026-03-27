@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Zynford Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;--sidebar:#111;--card:#161616;--card2:#1c1c1c;
+  --border:#232323;--border2:#2a2a2a;--text:#f2f2f2;--muted:#666;--muted2:#444;
+  --accent:#b8f940;--accent-dim:rgba(184,249,64,0.07);
+  --red:#ff4560;--blue:#00d4ff;--orange:#ff9f43;
+  --font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;--sw:220px;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;overflow-x:hidden}
+.sidebar{width:var(--sw);min-width:var(--sw);height:100vh;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100}
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.logo-mark{font-size:17px;font-weight:800;letter-spacing:-0.5px}
+.logo-mark span{color:var(--accent)}
+.logo-sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:3px}
+.sidebar-nav{flex:1;padding:14px 10px;display:flex;flex-direction:column;gap:2px}
+.nav-label{font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;padding:14px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;cursor:pointer;transition:all 0.15s;font-size:13px;font-weight:500;color:var(--muted);border:1px solid transparent}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(184,249,64,0.12)}
+.nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--card2);color:var(--muted2);font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:3px}
+.sidebar-foot{padding:14px 16px;border-top:1px solid var(--border)}
+.live-ind{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{padding:14px 26px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--bg);position:sticky;top:0;z-index:50}
+.page-title{font-size:14px;font-weight:600;color:var(--text)}
+.topbar-r{display:flex;align-items:center;gap:10px}
+.topbar-time{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.btn-sm{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;transition:all 0.15s}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.content{padding:22px 26px;flex:1}
+.page{display:none}.page.active{display:block}
+
+/* Setup */
+.setup-wrap{max-width:580px;margin:32px auto}
+.setup-card{background:var(--card);border:1px solid rgba(184,249,64,0.3);border-radius:12px;padding:28px}
+.setup-title{font-size:18px;font-weight:700;color:var(--accent);margin-bottom:5px}
+.setup-desc{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:22px;line-height:1.8}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}
+.field input{background:var(--card2);border:1px solid var(--border2);border-radius:7px;padding:10px 13px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;transition:border-color 0.15s}
+.field input:focus{border-color:var(--accent)}
+.field input::placeholder{color:var(--muted2)}
+.btn-connect{width:100%;background:var(--accent);color:#0d0d0d;border:none;border-radius:7px;padding:13px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity 0.15s}
+.btn-connect:hover{opacity:0.87}
+.setup-hint{margin-top:14px;font-family:var(--mono);font-size:10px;color:var(--muted);line-height:2}
+.setup-hint a{color:var(--accent);text-decoration:none}
+
+/* Insight */
+.insight-bar{background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px}
+.insight-lbl{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.insight-txt{font-size:13px;font-weight:500;line-height:1.5}
+.insight-txt.loading{color:var(--muted);font-style:italic;font-size:12px}
+
+/* Stats */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:16px 18px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.stat.s0::after{background:var(--muted2)}.stat.s1::after{background:var(--accent)}.stat.s2::after{background:var(--red)}.stat.s3::after{background:var(--blue)}
+.slbl{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+.sval{font-size:30px;font-weight:800;letter-spacing:-1px}
+.sval.ca{color:var(--accent)}.sval.cr{color:var(--red)}.sval.cb{color:var(--blue)}
+.ssub{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
+
+/* Section */
+.sec-hd{font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+
+/* Cards */
+.dcard{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:18px}
+.dcard-t{font-size:13px;font-weight:600;margin-bottom:2px}
+.dcard-s{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+
+/* Winner list */
+.wlist{display:flex;flex-direction:column;gap:6px}
+.witem{display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--card2);border-radius:7px;border:1px solid transparent;transition:border-color 0.15s}
+.witem:hover{border-color:var(--border2)}
+.witem.top{background:rgba(184,249,64,0.04);border-color:rgba(184,249,64,0.1)}
+.wrank{font-family:var(--mono);font-size:10px;color:var(--muted2);width:14px;text-align:center;flex-shrink:0}
+.wrank.gold{color:var(--accent)}
+.wname{flex:1;font-size:12px;font-weight:500}
+.wtested{font-family:var(--mono);font-size:10px;color:var(--muted);margin-right:6px;flex-shrink:0}
+.wbar{width:44px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0}
+.wbar-fill{height:100%;border-radius:2px;background:var(--accent)}
+.wpct{font-family:var(--mono);font-size:11px;font-weight:500;min-width:36px;text-align:right}
+.wpct.h{color:var(--accent)}.wpct.m{color:var(--orange)}.wpct.l{color:var(--muted)}
+
+/* Tabs */
+.tab-row{display:flex;gap:5px;margin-bottom:14px}
+.tab-btn{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:5px 13px;color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;transition:all 0.15s}
+.tab-btn.active{background:var(--accent-dim);border-color:rgba(184,249,64,0.2);color:var(--accent)}
+
+/* Coming soon */
+.cs-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:380px;gap:14px;text-align:center}
+.cs-icon{font-size:44px;opacity:0.25}
+.cs-h{font-size:16px;font-weight:600;color:var(--text);opacity:0.35}
+.cs-p{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.8;max-width:300px}
+.cs-list{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:18px 22px;text-align:left;max-width:340px;margin-top:6px}
+.cs-row{font-family:var(--mono);font-size:10px;color:var(--muted);padding:4px 0;display:flex;gap:10px}
+.cs-row span{color:var(--accent)}
+
+/* Loading / empty */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-b{text-align:center;padding:36px;color:var(--muted);font-family:var(--mono);font-size:11px}
+.empty-b{text-align:center;padding:28px;color:var(--muted);font-family:var(--mono);font-size:11px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">ZYN<span>FORD</span></div>
+    <div class="logo-sub">Belle Scottsdale</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overzicht</div>
+    <div class="nav-item active" onclick="nav('testing')" id="nav-testing">
+      <span class="nav-icon">📊</span>Testing Data
+    </div>
+    <div class="nav-item" onclick="nav('sales')" id="nav-sales">
+      <span class="nav-icon">🛒</span>Live Sales
+      <span class="nav-badge">binnenkort</span>
+    </div>
+    <div class="nav-label">Automatisering</div>
+    <div class="nav-item" onclick="nav('agents')" id="nav-agents">
+      <span class="nav-icon">🤖</span>Agent Status
+      <span class="nav-badge">binnenkort</span>
+    </div>
+    <div class="nav-label">Beheer</div>
+    <div class="nav-item" onclick="nav('settings')" id="nav-settings">
+      <span class="nav-icon">⚙️</span>Instellingen
+    </div>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="live-ind"><div class="live-dot"></div><span id="sTime">—</span></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="page-title" id="pgTitle">Testing Data</div>
+    <div class="topbar-r">
+      <span class="topbar-time" id="tTime">—</span>
+      <button class="btn-sm" onclick="reloadData()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- TESTING DATA -->
+    <div class="page active" id="page-testing">
+      <div id="setupWrap" class="setup-wrap">
+        <div class="setup-card">
+          <div class="setup-title">⚡ Connect je data</div>
+          <div class="setup-desc">Vul je API keys in om het dashboard te activeren.<br>Wordt eenmalig opgeslagen in je browser — hoef je maar één keer te doen.</div>
+          <div class="frow">
+            <div class="field"><label>Google Sheets ID</label><input type="text" id="sheetId" placeholder="1MQZKIvSwr_LxvK..."/></div>
+            <div class="field"><label>Google API Key</label><input type="password" id="googleKey" placeholder="AIzaSy..."/></div>
+          </div>
+          <div class="field"><label>Anthropic API Key</label><input type="password" id="anthropicKey" placeholder="sk-ant-..."/></div>
+          <button class="btn-connect" onclick="saveAndConnect()">Verbinden & Laden →</button>
+          <div class="setup-hint">
+            📋 Sheet ID staat in je URL tussen /d/ en /edit<br>
+            🔑 Google Key: <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → Credentials → API Key<br>
+            🤖 Anthropic Key: <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys
+          </div>
+        </div>
+      </div>
+
+      <div id="dash" style="display:none">
+        <div class="insight-bar">
+          <div style="font-size:18px">🧠</div>
+          <div style="flex:1">
+            <div class="insight-lbl">Claude AI · Aanbeveling</div>
+            <div class="insight-txt loading" id="insightTxt">Analyse laden...</div>
+          </div>
+          <button class="btn-sm" onclick="loadInsight()">↻</button>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat s0"><div class="slbl">Totaal Getest</div><div class="sval" id="sT">—</div><div class="ssub">producten</div></div>
+          <div class="stat s1"><div class="slbl">Sale</div><div class="sval ca" id="sS">—</div><div class="ssub" id="sSp">—</div></div>
+          <div class="stat s2"><div class="slbl">Killed</div><div class="sval cr" id="sK">—</div><div class="ssub" id="sKp">—</div></div>
+          <div class="stat s3"><div class="slbl">Scaled</div><div class="sval cb" id="sSc">—</div><div class="ssub" id="sScp">—</div></div>
+        </div>
+
+        <div class="sec-hd">Top Performers</div>
+        <div class="grid3" id="winnersGrid"><div class="loading-b"><div class="spinner"></div>Laden...</div></div>
+
+        <div class="sec-hd" style="margin-top:4px">Categorie Detail</div>
+        <div class="dcard" style="margin-bottom:20px">
+          <div class="tab-row">
+            <button class="tab-btn active" onclick="switchG('WOMEN',this)">👩 Women</button>
+            <button class="tab-btn" onclick="switchG('MEN',this)">👨 Men</button>
+          </div>
+          <div id="catDetail"><div class="loading-b"><div class="spinner"></div>Laden...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE SALES -->
+    <div class="page" id="page-sales">
+      <div class="cs-wrap">
+        <div class="cs-icon">🛒</div>
+        <div class="cs-h">Live Sales</div>
+        <div class="cs-p">Shopify koppeling wordt gebouwd in fase 2. Je ziet hier straks al je sales data realtime.</div>
+        <div class="cs-list">
+          <div class="cs-row"><span>01</span>Shopify API credentials instellen</div>
+          <div class="cs-row"><span>02</span>Sales vandaag / 7d / 30d / 365d</div>
+          <div class="cs-row"><span>03</span>Orders, fulfilled, nog te fulfilen</div>
+          <div class="cs-row"><span>04</span>AOV, CVR%, ATC%, checkout%</div>
+          <div class="cs-row"><span>05</span>Top products ranking</div>
+          <div class="cs-row"><span>06</span>Valuta weergave in USD</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGENTS -->
+    <div class="page" id="page-agents">
+      <div class="cs-wrap">
+        <div class="cs-icon">🤖</div>
+        <div class="cs-h">Agent Status</div>
+        <div class="cs-p">Overzicht van je AI agents — scraper, review collector, listing writer en meer.</div>
+        <div class="cs-list">
+          <div class="cs-row"><span>01</span>Meta Ad Library competitor scraper</div>
+          <div class="cs-row"><span>02</span>Amazon/Reddit review collector</div>
+          <div class="cs-row"><span>03</span>Listing rewriter (Poky → Belle Scottsdale)</div>
+          <div class="cs-row"><span>04</span>Status, laatste run, output per agent</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="setup-wrap">
+        <div class="setup-card">
+          <div class="setup-title">⚙️ Instellingen</div>
+          <div class="setup-desc">Pas je API keys aan of verbind opnieuw met je data.</div>
+          <div class="frow">
+            <div class="field"><label>Google Sheets ID</label><input type="text" id="sheetIdS" placeholder="1MQZKIvSwr_..."/></div>
+            <div class="field"><label>Google API Key</label><input type="password" id="googleKeyS" placeholder="AIzaSy..."/></div>
+          </div>
+          <div class="field"><label>Anthropic API Key</label><input type="password" id="anthropicKeyS" placeholder="sk-ant-..."/></div>
+          <button class="btn-connect" onclick="saveSettings()">Opslaan & Herladen →</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+let cfg={sheetId:'',googleKey:'',anthropicKey:''};
+let D={women:[],men:[],methods:[],markets:[]};
+let curG='WOMEN';
+const titles={testing:'Testing Data',sales:'Live Sales',agents:'Agent Status',settings:'Instellingen'};
+
+window.onload=()=>{
+  tick();setInterval(tick,30000);
+  const s=localStorage.getItem('zynford_v2');
+  if(s){
+    cfg=JSON.parse(s);
+    ['sheetId','googleKey','anthropicKey'].forEach(k=>{
+      const el=document.getElementById(k);
+      if(el) el.value=cfg[k]||'';
+    });
+    if(cfg.sheetId&&cfg.googleKey) loadDashboard();
+  }
+};
+
+function tick(){
+  const n=new Date();
+  const t=n.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  const d=n.toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'});
+  document.getElementById('tTime').textContent=d+' · '+t;
+  document.getElementById('sTime').textContent=t;
+}
+
+function nav(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('nav-'+page).classList.add('active');
+  document.getElementById('pgTitle').textContent=titles[page]||page;
+  if(page==='settings'){
+    document.getElementById('sheetIdS').value=cfg.sheetId||'';
+    document.getElementById('googleKeyS').value=cfg.googleKey||'';
+    document.getElementById('anthropicKeyS').value=cfg.anthropicKey||'';
+  }
+}
+
+function saveAndConnect(){
+  cfg.sheetId=document.getElementById('sheetId').value.trim();
+  cfg.googleKey=document.getElementById('googleKey').value.trim();
+  cfg.anthropicKey=document.getElementById('anthropicKey').value.trim();
+  if(!cfg.sheetId||!cfg.googleKey){alert('Vul minimaal Sheet ID en Google API Key in.');return;}
+  localStorage.setItem('zynford_v2',JSON.stringify(cfg));
+  loadDashboard();
+}
+
+function saveSettings(){
+  cfg.sheetId=document.getElementById('sheetIdS').value.trim();
+  cfg.googleKey=document.getElementById('googleKeyS').value.trim();
+  cfg.anthropicKey=document.getElementById('anthropicKeyS').value.trim();
+  localStorage.setItem('zynford_v2',JSON.stringify(cfg));
+  nav('testing');loadDashboard();
+}
+
+function reloadData(){if(cfg.sheetId&&cfg.googleKey)loadDashboard();}
+
+async function loadDashboard(){
+  try{
+    const rows=await fetchSheet('DATA');
+    parseData(rows);
+    document.getElementById('setupWrap').style.display='none';
+    document.getElementById('dash').style.display='block';
+    renderAll();
+    if(cfg.anthropicKey)loadInsight();
+  }catch(e){
+    alert('Fout bij laden:\n'+e.message+'\n\nCheck je Sheet ID en Google API Key.');
+  }
+}
+
+async function fetchSheet(tab){
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}/values/${encodeURIComponent(tab)}?key=${cfg.googleKey}`;
+  const r=await fetch(url);
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Sheets API fout');}
+  return(await r.json()).values||[];
+}
+
+function parseData(rows){
+  let mi=-1,wi=-1,mti=-1,mki=-1;
+  for(let i=0;i<rows.length;i++){
+    const f=(rows[i][0]||'').toString().trim().toUpperCase();
+    if(f==='MEN')mi=i;
+    else if(f==='WOMEN')wi=i;
+    else if(f==='PR METHOD')mti=i;
+    else if(f==='MARKET')mki=i;
+  }
+  D.men=sec(rows,mi);D.women=sec(rows,wi);D.methods=sec(rows,mti);D.markets=sec(rows,mki);
+}
+
+function sec(rows,hdr){
+  if(hdr<0)return[];
+  const out=[];
+  const stops=['MEN','WOMEN','PR METHOD','MARKET'];
+  for(let i=hdr+1;i<rows.length;i++){
+    const row=rows[i];
+    if(!row||!row[0])continue;
+    const name=(row[0]||'').toString().trim();
+    if(!name)continue;
+    if(stops.includes(name.toUpperCase())&&i>hdr+2)break;
+    if(name.toUpperCase()==='TESTED')continue;
+    const tested=pn(row[1]),killed=pn(row[2]),sale=pn(row[4]),scale=pn(row[6]);
+    out.push({name,tested,killed,killedPct:tested>0?killed/tested:0,sale,salePct:tested>0?sale/tested:0,scale,scaledPct:tested>0?scale/tested:0});
+  }
+  return out;
+}
+
+function pn(v){
+  if(v===undefined||v===null||v===''||String(v).includes('DIV'))return 0;
+  const n=parseFloat(String(v).replace(',','.').replace('%',''));
+  return isNaN(n)?0:n;
+}
+
+function renderAll(){renderStats();renderWinners();renderCat(curG);}
+
+function renderStats(){
+  const tot=D.methods.reduce((a,r)=>({tested:a.tested+r.tested,sale:a.sale+r.sale,killed:a.killed+r.killed,scale:a.scale+r.scale}),{tested:0,sale:0,killed:0,scale:0});
+  const t=tot.tested||1;
+  document.getElementById('sT').textContent=tot.tested;
+  document.getElementById('sS').textContent=tot.sale;
+  document.getElementById('sSp').textContent=p(tot.sale/t)+'% win rate';
+  document.getElementById('sK').textContent=tot.killed;
+  document.getElementById('sKp').textContent=p(tot.killed/t)+'% kill rate';
+  document.getElementById('sSc').textContent=tot.scale;
+  document.getElementById('sScp').textContent=p(tot.scale/t)+'% scale rate';
+}
+
+function renderWinners(){
+  const grid=document.getElementById('winnersGrid');
+  grid.innerHTML=[
+    wcard('👩 Women Categorie','Top categorieën',topN(D.women,5)),
+    wcard('🔍 Research Methode','Hoogste win rate',topN(D.methods,5)),
+    wcard('🌍 Markt','Beste markten',topN(D.markets,5)),
+  ].join('');
+}
+
+function wcard(title,sub,items){
+  const rows=items.length?items.map((r,i)=>`
+    <div class="witem ${i===0?'top':''}">
+      <div class="wrank ${i===0?'gold':''}">${i===0?'★':(i+1)}</div>
+      <div class="wname">${r.name}</div>
+      <div class="wtested">${r.tested}x</div>
+      <div class="wbar"><div class="wbar-fill" style="width:${Math.round(r.salePct*100)}%"></div></div>
+      <div class="wpct ${r.salePct>=0.4?'h':r.salePct>=0.2?'m':'l'}">${p(r.salePct)}%</div>
+    </div>`).join(''):`<div class="empty-b">Nog geen data</div>`;
+  return`<div class="dcard"><div class="dcard-t">${title}</div><div class="dcard-s">${sub}</div><div class="wlist">${rows}</div></div>`;
+}
+
+function topN(arr,n){
+  return[...arr].filter(r=>r.tested>0).sort((a,b)=>(b.salePct+b.scaledPct*0.5)-(a.salePct+a.scaledPct*0.5)).slice(0,n);
+}
+
+function switchG(g,btn){
+  curG=g;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCat(g);
+}
+
+function renderCat(g){
+  const arr=g==='WOMEN'?D.women:D.men;
+  const sorted=[...arr].filter(r=>r.tested>0).sort((a,b)=>b.salePct-a.salePct);
+  const el=document.getElementById('catDetail');
+  if(!sorted.length){el.innerHTML='<div class="empty-b">Nog geen data ingevuld voor deze categorie</div>';return;}
+  const max=Math.max(...sorted.map(r=>r.salePct),0.01);
+  el.innerHTML=`<div class="wlist">${sorted.map((r,i)=>`
+    <div class="witem ${i===0?'top':''}">
+      <div class="wrank ${i===0?'gold':''}">${i===0?'★':(i+1)}</div>
+      <div class="wname">${r.name}</div>
+      <div class="wtested">${r.tested}x getest</div>
+      <div class="wbar"><div class="wbar-fill" style="width:${Math.round(r.salePct/max*100)}%"></div></div>
+      <div class="wpct ${r.salePct>=0.4?'h':r.salePct>=0.2?'m':'l'}">${p(r.salePct)}% sale</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);min-width:70px;text-align:right">${p(r.killedPct)}% killed</div>
+    </div>`).join('')}</div>`;
+}
+
+async function loadInsight(){
+  if(!cfg.anthropicKey)return;
+  const el=document.getElementById('insightTxt');
+  el.className='insight-txt loading';el.textContent='Claude analyseert...';
+  const tw=topN(D.women,3).map(r=>`${r.name}(${p(r.salePct)}%)`).join(', ');
+  const tm=topN(D.methods,3).map(r=>`${r.name}(${p(r.salePct)}%)`).join(', ');
+  const tmk=topN(D.markets,3).map(r=>`${r.name}(${p(r.salePct)}%)`).join(', ');
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':cfg.anthropicKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:80,messages:[{role:'user',content:`Belle Scottsdale dropshipping data:\nCategorie winners: ${tw||'geen'}\nMethode winners: ${tm||'geen'}\nMarkt winners: ${tmk||'geen'}\n\nGeef 1 directe aanbeveling in max 20 woorden. Geen inleiding.`}]})
+    });
+    const d=await r.json();
+    el.className='insight-txt';
+    el.textContent=d.content?.[0]?.text||'Geen analyse beschikbaar.';
+  }catch(e){
+    el.className='insight-txt loading';
+    el.textContent='Voeg Anthropic API key toe in Instellingen voor AI analyse.';
+  }
+}
+
+function p(v){return Math.round((v||0)*100)}
+</script>
+</body>
+</html>
