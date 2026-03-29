@@ -216,16 +216,44 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 
     <!-- LIVE SALES -->
     <div class="page" id="page-sales">
-      <div class="cs-wrap">
-        <div class="cs-icon">🛒</div>
-        <div class="cs-h">Live Sales</div>
-        <div class="cs-p">Shopify koppeling wordt gebouwd in fase 2.</div>
-        <div class="cs-list">
-          <div class="cs-row"><span>01</span>Sales vandaag / 7d / 30d / 365d</div>
-          <div class="cs-row"><span>02</span>Orders, fulfilled, nog te fulfilen</div>
-          <div class="cs-row"><span>03</span>AOV, CVR%, ATC%, checkout%</div>
-          <div class="cs-row"><span>04</span>Top products ranking in USD</div>
+      <div id="salesSetupWrap" class="setup-wrap">
+        <div class="setup-card">
+          <div class="setup-title">Shopify Koppelen</div>
+          <div class="setup-desc">Vul je Shopify credentials in om live sales data te laden.</div>
+          <div class="frow">
+            <div class="field"><label>Shop Domain</label><input type="text" id="shopDomain" placeholder="clara-belle-scottsdale.myshopify.com"/></div>
+            <div class="field"><label>Access Token</label><input type="password" id="shopToken" placeholder="shpss_..."/></div>
+          </div>
+          <button class="btn-connect" onclick="saveShopify()">Verbinden &rarr;</button>
         </div>
+      </div>
+      <div id="salesDash" style="display:none">
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="tab-btn active" onclick="loadSales('today',this)">Vandaag</button>
+          <button class="tab-btn" onclick="loadSales('yesterday',this)">Gisteren</button>
+          <button class="tab-btn" onclick="loadSales('7d',this)">7 dagen</button>
+          <button class="tab-btn" onclick="loadSales('30d',this)">30 dagen</button>
+          <button class="tab-btn" onclick="loadSales('365d',this)">365 dagen</button>
+        </div>
+        <div class="stat-row">
+          <div class="stat s1"><div class="slbl">Totale Omzet</div><div class="sval ca" id="sTotalRev" style="font-size:24px">&#8212;</div><div class="ssub" id="sCurrency">&#8212;</div></div>
+          <div class="stat s0"><div class="slbl">Orders</div><div class="sval" id="sTotalOrders">&#8212;</div><div class="ssub">bestellingen</div></div>
+          <div class="stat s3"><div class="slbl">AOV</div><div class="sval cb" id="sAOV" style="font-size:24px">&#8212;</div><div class="ssub">gem. orderwaarde</div></div>
+          <div class="stat s0"><div class="slbl">Te Fulfilen</div><div class="sval" id="sUnfulfilled">&#8212;</div><div class="ssub" id="sFulfilled">&#8212;</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:20px">
+          <div class="dcard">
+            <div class="dcard-t">Omzet over tijd</div>
+            <div class="dcard-s">dagelijks</div>
+            <canvas id="revenueChart" height="160"></canvas>
+          </div>
+          <div class="dcard">
+            <div class="dcard-t">Top Producten</div>
+            <div class="dcard-s">op omzet</div>
+            <div id="topProductsList"><div class="loading-b"><div class="spinner"></div>Laden...</div></div>
+          </div>
+        </div>
+        <div id="salesLoading" class="loading-b" style="display:none"><div class="spinner"></div>Sales data laden...</div>
       </div>
     </div>
 
@@ -483,6 +511,125 @@ async function loadInsight(){
 }
 
 function p(v){return Math.round((v||0)*100)}
+
+// ── SHOPIFY ───────────────────────────────────────────────────────────────
+let shopCfg = {shopDomain:'', accessToken:''};
+let salesChart = null;
+
+function saveShopify(){
+  shopCfg.shopDomain = document.getElementById('shopDomain').value.trim();
+  shopCfg.accessToken = document.getElementById('shopToken').value.trim();
+  if(!shopCfg.shopDomain||!shopCfg.accessToken){alert('Vul beide velden in.');return;}
+  localStorage.setItem('zynford_shopify', JSON.stringify(shopCfg));
+  document.getElementById('salesSetupWrap').style.display='none';
+  document.getElementById('salesDash').style.display='block';
+  loadSales('30d', document.querySelector('#page-sales .tab-btn:nth-child(4)'));
+}
+
+async function loadSales(period, btn){
+  if(!shopCfg.shopDomain) return;
+  document.querySelectorAll('#page-sales .tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.getElementById('salesLoading').style.display='block';
+
+  try{
+    const r = await fetch('/api/shopify',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({shopDomain:shopCfg.shopDomain, accessToken:shopCfg.accessToken, period})
+    });
+    const d = await r.json();
+    if(d.error) throw new Error(d.error);
+    renderSales(d);
+  }catch(e){
+    alert('Shopify fout: '+e.message);
+  }finally{
+    document.getElementById('salesLoading').style.display='none';
+  }
+}
+
+function renderSales(d){
+  const sym = d.currency==='GBP'?'£':d.currency==='EUR'?'€':'$';
+  document.getElementById('sTotalRev').textContent = sym+d.totalRevenue.toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('sCurrency').textContent = d.currency+' (USD equivalent)';
+  document.getElementById('sTotalOrders').textContent = d.totalOrders;
+  document.getElementById('sAOV').textContent = sym+d.aov.toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('sUnfulfilled').textContent = d.unfulfilledOrders;
+  document.getElementById('sFulfilled').textContent = d.fulfilledOrders+' fulfilled';
+
+  // Top products
+  const list = document.getElementById('topProductsList');
+  if(!d.topProducts.length){list.innerHTML='<div class="empty-b">Geen producten</div>';return;}
+  const max = Math.max(...d.topProducts.map(p=>p.revenue),1);
+  list.innerHTML='<div class="wlist">'+d.topProducts.map((p,i)=>`
+    <div class="witem ${i===0?'top':''}">
+      <div class="wrank ${i===0?'gold':''}">${i===0?'&#9733;':(i+1)}</div>
+      <div class="wname" style="font-size:11px">${p.name.substring(0,28)}${p.name.length>28?'...':''}</div>
+      <div class="wbar"><div class="wbar-fill" style="width:${Math.round(p.revenue/max*100)}%"></div></div>
+      <div class="wpct h">${sym}${Math.round(p.revenue)}</div>
+    </div>`).join('')+'</div>';
+
+  // Chart
+  renderChart(d.dailyRevenue, sym);
+}
+
+function renderChart(dailyRevenue, sym){
+  const labels = Object.keys(dailyRevenue).map(d=>{
+    const dt = new Date(d);
+    return dt.toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+  });
+  const values = Object.values(dailyRevenue);
+
+  const canvas = document.getElementById('revenueChart');
+  if(salesChart) salesChart.destroy();
+
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js';
+  script.onload = ()=>{
+    salesChart = new Chart(canvas, {
+      type:'line',
+      data:{
+        labels,
+        datasets:[{
+          label:'Omzet',
+          data:values,
+          borderColor:'#b8f940',
+          backgroundColor:'rgba(184,249,64,0.08)',
+          borderWidth:2,
+          pointRadius:3,
+          pointBackgroundColor:'#b8f940',
+          fill:true,
+          tension:0.3
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>sym+c.parsed.y.toFixed(2)}}},
+        scales:{
+          x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#666',font:{size:10}}},
+          y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#666',font:{size:10},callback:v=>sym+v}}
+        }
+      }
+    });
+  };
+  if(!window.Chart) document.head.appendChild(script);
+  else {
+    salesChart = new Chart(canvas, {
+      type:'line',
+      data:{labels,datasets:[{label:'Omzet',data:values,borderColor:'#b8f940',backgroundColor:'rgba(184,249,64,0.08)',borderWidth:2,pointRadius:3,pointBackgroundColor:'#b8f940',fill:true,tension:0.3}]},
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>sym+c.parsed.y.toFixed(2)}}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#666',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#666',font:{size:10},callback:v=>sym+v}}}}
+    });
+  }
+}
+
+// Load shopify config on page load
+const shopSaved = localStorage.getItem('zynford_shopify');
+if(shopSaved){
+  shopCfg = JSON.parse(shopSaved);
+  document.getElementById('shopDomain').value = shopCfg.shopDomain;
+  document.getElementById('shopToken').value = shopCfg.accessToken;
+}
+
 </script>
 </body>
 </html>
