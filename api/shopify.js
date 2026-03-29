@@ -83,7 +83,7 @@ export default async function handler(req, res) {
     const aov = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     const fulfilledOrders = paidOrders.filter(o => o.fulfillment_status === 'fulfilled').length;
     const unfulfilledOrders = paidOrders.filter(o => !o.fulfillment_status || o.fulfillment_status === 'partial').length;
-    const currency = orders.length > 0 ? orders[0].currency : 'GBP';
+    const currency = 'USD';
 
     // Top products
     const productSales = {};
