@@ -2,129 +2,38 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { shopDomain, accessToken, period } = req.body;
-  if (!shopDomain || !accessToken) return res.status(400).json({ error: 'Missing credentials' });
-
-  // Calculate date range
-  const now = new Date();
-  let startDate;
-  switch(period) {
-    case 'today':
-      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      break;
-    case 'yesterday':
-      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-      const endYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      break;
-    case '7d':
-      startDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
-      break;
-    case '30d':
-      startDate = new Date(now - 30 * 24 * 60 * 60 * 1000);
-      break;
-    case '365d':
-      startDate = new Date(now - 365 * 24 * 60 * 60 * 1000);
-      break;
-    default:
-      startDate = new Date(now - 30 * 24 * 60 * 60 * 1000);
-  }
+  const { prompt, apiKey } = req.body;
+  if (!prompt || !apiKey) return res.status(400).json({ error: 'Missing prompt or apiKey' });
 
   try {
-    // Fetch orders
-    let allOrders = [];
-    let url = `https://${shopDomain}/admin/api/2024-01/orders.json?status=any&created_at_min=${startDate.toISOString()}&limit=250`;
-    
-    while (url) {
-      const r = await fetch(url, {
-        headers: {
-          'X-Shopify-Access-Token': accessToken,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!r.ok) {
-        const err = await r.json();
-        return res.status(r.status).json({ error: err.errors || 'Shopify API fout' });
-      }
-      
-      const data = await r.json();
-      allOrders = [...allOrders, ...(data.orders || [])];
-      
-      // Check for next page
-      const linkHeader = r.headers.get('Link');
-      if (linkHeader && linkHeader.includes('rel="next"')) {
-        const match = linkHeader.match(/<([^>]+)>; rel="next"/);
-        url = match ? match[1] : null;
-      } else {
-        url = null;
-      }
-    }
-
-    // Filter for period if yesterday
-    let orders = allOrders;
-    if (period === 'yesterday') {
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      orders = allOrders.filter(o => {
-        const d = new Date(o.created_at);
-        return d >= start && d < end;
-      });
-    }
-
-    // Calculate metrics
-    const paidOrders = orders.filter(o => o.financial_status !== 'refunded' && o.financial_status !== 'voided');
-    const totalRevenue = paidOrders.reduce((sum, o) => sum + parseFloat(o.total_price || 0), 0);
-    const totalOrders = paidOrders.length;
-    const aov = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const fulfilledOrders = paidOrders.filter(o => o.fulfillment_status === 'fulfilled').length;
-    const unfulfilledOrders = paidOrders.filter(o => !o.fulfillment_status || o.fulfillment_status === 'partial').length;
-    const currency = orders.length > 0 ? orders[0].currency : 'GBP';
-
-    // Top products
-    const productSales = {};
-    paidOrders.forEach(order => {
-      (order.line_items || []).forEach(item => {
-        const key = item.title;
-        if (!productSales[key]) productSales[key] = { name: key, revenue: 0, quantity: 0 };
-        productSales[key].revenue += parseFloat(item.price) * item.quantity;
-        productSales[key].quantity += item.quantity;
-      });
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 120,
+        system: `Je bent een dropshipping data analist. Geef advies puur op basis van de cijfers die je krijgt. 
+Regels:
+- Noem NOOIT de doelgroep (vrouwen 35-65) — dat is altijd bekend
+- CA/UK/USA etc zijn bronmarkten (waar je het product vandaan haalt), niet je verkoopmarkt
+- Formaat: "Focus op [categorie] via [methode] uit [bronmarkt]. Overweeg ook [extra suggestie op basis van data]."
+- Max 30 woorden totaal
+- Geen inleiding, geen uitleg, alleen het advies`,
+        messages: [{ role: 'user', content: prompt }],
+      }),
     });
 
-    const topProducts = Object.values(productSales)
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5);
-
-    // Daily revenue for chart (last 7 or 30 days)
-    const dailyRevenue = {};
-    const days = period === '7d' ? 7 : period === '30d' ? 30 : 7;
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(now - i * 24 * 60 * 60 * 1000);
-      const key = d.toISOString().split('T')[0];
-      dailyRevenue[key] = 0;
-    }
-    paidOrders.forEach(order => {
-      const key = order.created_at.split('T')[0];
-      if (dailyRevenue[key] !== undefined) {
-        dailyRevenue[key] += parseFloat(order.total_price || 0);
-      }
-    });
-
-    return res.status(200).json({
-      totalRevenue: Math.round(totalRevenue * 100) / 100,
-      totalOrders,
-      aov: Math.round(aov * 100) / 100,
-      fulfilledOrders,
-      unfulfilledOrders,
-      currency,
-      topProducts,
-      dailyRevenue,
-      period
-    });
-
+    const data = await response.json();
+    if (!response.ok) return res.status(response.status).json({ error: data.error?.message || 'Anthropic fout' });
+    return res.status(200).json({ text: data.content?.[0]?.text || '' });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
