@@ -133,9 +133,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <div class="nav-item active" onclick="nav('testing')" id="nav-testing">
       <span class="nav-icon">📊</span>Testing Data
     </div>
-    <div class="nav-item" onclick="nav('sales')" id="nav-sales">
-      <span class="nav-icon">🛒</span>Live Sales
-    </div>
+
     <div class="nav-label">Automatisering</div>
     <div class="nav-item" onclick="nav('agents')" id="nav-agents">
       <span class="nav-icon">🤖</span>Agent Status
@@ -213,48 +211,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       </div>
     </div>
 
-    <!-- LIVE SALES -->
-    <div class="page" id="page-sales">
-      <div id="salesSetupWrap" class="setup-wrap">
-        <div class="setup-card">
-          <div class="setup-title">Shopify Koppelen</div>
-          <div class="setup-desc">Vul je Shopify credentials in om live sales data te laden.</div>
-          <div class="frow">
-            <div class="field"><label>Shop Domain</label><input type="text" id="shopDomain" placeholder="clara-belle-scottsdale.myshopify.com"/></div>
-            <div class="field"><label>Access Token</label><input type="password" id="shopToken" placeholder="shpss_..."/></div>
-          </div>
-          <button class="btn-connect" onclick="saveShopify()">Verbinden &rarr;</button>
-        </div>
-      </div>
-      <div id="salesDash" style="display:none">
-        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
-          <button class="tab-btn active" onclick="loadSales('today',this)">Vandaag</button>
-          <button class="tab-btn" onclick="loadSales('yesterday',this)">Gisteren</button>
-          <button class="tab-btn" onclick="loadSales('7d',this)">7 dagen</button>
-          <button class="tab-btn" onclick="loadSales('30d',this)">30 dagen</button>
-          <button class="tab-btn" onclick="loadSales('365d',this)">365 dagen</button>
-        </div>
-        <div class="stat-row">
-          <div class="stat s1"><div class="slbl">Totale Omzet</div><div class="sval ca" id="sTotalRev" style="font-size:24px">&#8212;</div><div class="ssub" id="sCurrency">&#8212;</div></div>
-          <div class="stat s0"><div class="slbl">Orders</div><div class="sval" id="sTotalOrders">&#8212;</div><div class="ssub">bestellingen</div></div>
-          <div class="stat s3"><div class="slbl">AOV</div><div class="sval cb" id="sAOV" style="font-size:24px">&#8212;</div><div class="ssub">gem. orderwaarde</div></div>
-          <div class="stat s0"><div class="slbl">Te Fulfilen</div><div class="sval" id="sUnfulfilled">&#8212;</div><div class="ssub" id="sFulfilled">&#8212;</div></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:20px">
-          <div class="dcard">
-            <div class="dcard-t">Omzet over tijd</div>
-            <div class="dcard-s">dagelijks</div>
-            <canvas id="revenueChart" height="160"></canvas>
-          </div>
-          <div class="dcard">
-            <div class="dcard-t">Top Producten</div>
-            <div class="dcard-s">op omzet</div>
-            <div id="topProductsList"><div class="loading-b"><div class="spinner"></div>Laden...</div></div>
-          </div>
-        </div>
-        <div id="salesLoading" class="loading-b" style="display:none"><div class="spinner"></div>Sales data laden...</div>
-      </div>
-    </div>
+
 
     <!-- AGENTS -->
     <div class="page" id="page-agents">
