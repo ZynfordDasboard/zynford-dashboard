@@ -125,8 +125,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <div class="logo-mark">ZYN<span>FORD</span></div>
-    <div class="logo-sub">Belle Scottsdale</div>
+    <div class="logo-mark">OPS <span>DASHBOARD</span></div>
+    <div class="logo-sub">Zynford LLC</div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-label">Overzicht</div>
@@ -135,7 +135,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     </div>
     <div class="nav-item" onclick="nav('sales')" id="nav-sales">
       <span class="nav-icon">🛒</span>Live Sales
-      <span class="nav-badge">binnenkort</span>
     </div>
     <div class="nav-label">Automatisering</div>
     <div class="nav-item" onclick="nav('agents')" id="nav-agents">
@@ -549,9 +548,9 @@ async function loadSales(period, btn){
 }
 
 function renderSales(d){
-  const sym = d.currency==='GBP'?'£':d.currency==='EUR'?'€':'$';
+  const sym = '$';
   document.getElementById('sTotalRev').textContent = sym+d.totalRevenue.toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('sCurrency').textContent = d.currency+' (USD equivalent)';
+  document.getElementById('sCurrency').textContent = 'USD';
   document.getElementById('sTotalOrders').textContent = d.totalOrders;
   document.getElementById('sAOV').textContent = sym+d.aov.toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
   document.getElementById('sUnfulfilled').textContent = d.unfulfilledOrders;
